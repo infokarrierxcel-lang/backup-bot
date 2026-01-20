@@ -1,10 +1,21 @@
 import { google } from "googleapis";
 import fs from "fs";
 
-const auth = new google.auth.GoogleAuth({
-  keyFile: "credentials.json",
-  scopes: ["https://www.googleapis.com/auth/drive"],
-});
+let auth;
+
+if (process.env.GOOGLE_SERVICE_ACCOUNT) {
+  // Render
+  auth = new google.auth.GoogleAuth({
+    credentials: JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT),
+    scopes: ["https://www.googleapis.com/auth/drive"],
+  });
+} else {
+  // Local
+  auth = new google.auth.GoogleAuth({
+    keyFile: "credentials.json",
+    scopes: ["https://www.googleapis.com/auth/drive"],
+  });
+}
 
 export const uploadToDrive = async (filePath) => {
   const drive = google.drive({ version: "v3", auth });
@@ -19,6 +30,4 @@ export const uploadToDrive = async (filePath) => {
       body: fs.createReadStream(filePath),
     },
   });
-
-  console.log("Uploaded file ID:", response.data.id);
 };
